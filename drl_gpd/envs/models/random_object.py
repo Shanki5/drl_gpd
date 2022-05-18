@@ -21,13 +21,23 @@ class RandomObject(model_wrapper.ModelWrapper):
                  reset_collection: bool = False,
                  np_random=None):
 
-        # Get a unique model name
-        """ from the google scanned object."""
+        """
+        Get a unique model name and the Initial pose of the model
+        """
         model_name = get_unique_model_name(world, name)
-
-        # Initial pose
         initial_pose = scenario.Pose(position, orientation)
 
+        """
+        Creating the model collection randomizer using default parameters that include
+        1. model_paths - Path containing object model configurations
+        2. owner - Copyrights of the different models
+        3. collection - Collection of different scanned objects
+        4. server - Address of the server to download the object files
+        5. server_version - Version of the server
+        6. unique_cache - Clearing cache everytime the Randomizer is used (Boolean value)
+        7. reset_collection - Reset the object collection everytime the Randomizer is used (Boolean value)
+        8. np_random
+        """
         model_collection_randomizer = ModelCollectionRandomizer(model_paths=model_paths,
                                                                 owner=owner,
                                                                 collection=collection,
@@ -37,18 +47,20 @@ class RandomObject(model_wrapper.ModelWrapper):
                                                                 reset_collection=reset_collection,
                                                                 np_random=np_random)
 
-        # Note: using default arguments here
+        """
+        Samples a random model from the collection of models using the random_model() function
+        Note: using default arguments here
+        Inserting the sampled object model into the world
+        """
         modified_sdf_file = model_collection_randomizer.random_model()
-
-        # Insert the model
         ok_model = world.to_gazebo().insert_model(modified_sdf_file,
                                                   initial_pose,
                                                   model_name)
         if not ok_model:
             raise RuntimeError('Failed to insert ' + model_name)
 
-        # Get the model
+        """
+        Get the model and Initialize the base class
+        """
         model = world.get_model(model_name)
-
-        # Initialize base class
         model_wrapper.ModelWrapper.__init__(self, model=model)
